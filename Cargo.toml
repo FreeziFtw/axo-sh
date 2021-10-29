@@ -7,5 +7,9 @@ edition = "2021"
 serde = "1.0.130"
 dotenv = "0.15.0"
 actix-web = "3.3.2"
-diesel = { version = "1.4.8", features = ["r2d2", "mysql"] }
 url = { version = "2.2.2", features = ["serde"] }
+
+[dependencies.mongodb]
+version = "2.0.1"
+default-features = false
+features = ["async-std-runtime"]
