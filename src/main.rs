@@ -1,6 +1,7 @@
 use std::{io, env};
 use dotenv::dotenv;
 use actix_web::{App, HttpServer};
+use actix_web::middleware::NormalizePath;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
@@ -11,6 +12,7 @@ async fn main() -> io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
+            .wrap(NormalizePath::default())
     })
         .bind(server_address)?
         .run()
