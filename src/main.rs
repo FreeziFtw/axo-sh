@@ -1,3 +1,5 @@
+use dotenv::dotenv;
+
 fn main() {
-    println!("Hello, world!");
+    dotenv().ok();
 }
