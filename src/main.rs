@@ -1,4 +1,5 @@
 mod handlers;
+mod models;
 
 use std::{io, env};
 use dotenv::dotenv;
