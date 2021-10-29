@@ -1,12 +1,18 @@
 mod handlers;
 mod models;
 
+#[macro_use]
+extern crate diesel;
+
 use std::{io, env};
 use dotenv::dotenv;
 
 use actix_web::{App, HttpServer};
 use actix_web::web::scope;
 use actix_web::middleware::NormalizePath;
+
+use diesel::MysqlConnection;
+use diesel::r2d2::{Pool, ConnectionManager};
 
 use crate::handlers::{add_url, get_url_by_id};
 
@@ -17,8 +23,19 @@ async fn main() -> io::Result<()> {
     let server_address = env::var("SERVER_ADDRESS")
         .expect("No server address was provided.");
 
-    HttpServer::new(|| {
+    let database_url = env::var("DATABASE_URL")
+        .expect("No database url was provided.");
+
+    let manager =
+        ConnectionManager::<MysqlConnection>::new(database_url);
+
+    let pool = Pool::builder()
+        .build(manager)
+        .expect("Unable to build pool.");
+
+    HttpServer::new(move || {
         App::new()
+            .data(pool.clone())
             .wrap(NormalizePath::default())
             .service(
                 scope("/api")
