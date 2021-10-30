@@ -1,51 +1,68 @@
 mod handlers;
 mod models;
 
-#[macro_use]
-extern crate diesel;
+use std::{env, io};
 
-use std::{io, env};
-use dotenv::dotenv;
-
+use actix_web::web;
+use actix_web::middleware;
 use actix_web::{App, HttpServer};
-use actix_web::web::scope;
-use actix_web::middleware::NormalizePath;
+use actix_web::web::{Data};
 
-use diesel::MysqlConnection;
-use diesel::r2d2::{Pool, ConnectionManager};
+use mongodb::bson;
+use mongodb::{Client, IndexModel};
+use mongodb::options::IndexOptions;
 
-use crate::handlers::{add_url, get_url_by_id};
+const DB_NAME: &str = "axosh";
+const COLUMN_NAME: &str = "shorturls";
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
     let server_address = env::var("SERVER_ADDRESS")
         .expect("No server address was provided.");
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("No database url was provided.");
+    let client = {
+        let mongodb_uri = env::var("MONGODB_URI")
+            .expect("No mongodb uri was provided.");
 
-    let manager =
-        ConnectionManager::<MysqlConnection>::new(database_url);
+        Client::with_uri_str(mongodb_uri)
+            .await
+            .expect("Unable to create client.")
+    };
 
-    let pool = Pool::builder()
-        .build(manager)
-        .expect("Unable to build pool.");
+    {
+        let options = IndexOptions::builder()
+            .unique(true)
+            .build();
+
+        let model = IndexModel::builder()
+            .keys(bson::doc!("id": 1))
+            .options(options)
+            .build();
+
+        client
+            .database(DB_NAME)
+            .collection::<models::ShortUrl>(COLUMN_NAME)
+            .create_index(model, None)
+            .await
+            .expect("Unable to create index.");
+    }
 
     HttpServer::new(move || {
         App::new()
-            .data(pool.clone())
-            .wrap(NormalizePath::default())
+            .app_data(Data::new(client.clone()))
+            .wrap(middleware::NormalizePath::default())
+            .wrap(middleware::Compress::default())
             .service(
-                scope("/api")
+                web::scope("/api")
                     .service(
-                        scope("/url")
-                            .service(add_url)
-                            .service(get_url_by_id)
+                        web::scope("/url")
+                            .service(handlers::get_url_by_id)
+                            .service(handlers::add_url)
                     )
             )
-            .service(get_url_by_id)
+            .service(handlers::get_url_by_id)
     })
         .bind(server_address)?
         .run()
