@@ -8,6 +8,8 @@ use actix_web::middleware;
 use actix_web::{App, HttpServer};
 use actix_web::web::{Data};
 
+use actix_files::Files;
+
 use mongodb::bson;
 use mongodb::{Client, IndexModel};
 use mongodb::options::IndexOptions;
@@ -63,6 +65,10 @@ async fn main() -> io::Result<()> {
                     )
             )
             .service(handlers::get_url_by_id)
+            .service(
+                Files::new("/", "./static/root")
+                    .index_file("index.html")
+            )
     })
         .bind(server_address)?
         .run()
