@@ -15,3 +15,16 @@ pub struct ShortUrl {
 pub struct Id {
     pub id: String,
 }
+
+#[derive(Serialize)]
+pub struct ErrorMessage {
+    pub msg: String,
+}
+
+impl ErrorMessage {
+    pub fn new(s: &str) -> Self {
+        Self {
+            msg: s.to_string(),
+        }
+    }
+}

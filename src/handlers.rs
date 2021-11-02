@@ -12,7 +12,16 @@ use crate::{models, COLUMN_NAME, DB_NAME};
 
 #[actix_web::post("/")]
 pub async fn add_url(client: web::Data<Client>, url: web::Json<models::Url>) -> Result<HttpResponse, Error> {
-    let url = url::Url::parse(&url.url)
+    let url = &url.url;
+
+    if url.len() > 2048 {
+        return Ok(
+            HttpResponse::BadRequest()
+                .json(models::ErrorMessage::new("URL exceeds length limit"))
+        );
+    }
+
+    let url = url::Url::parse(url)
         .map_err(|_| {
             HttpResponse::BadRequest().finish()
         })?.to_string();
