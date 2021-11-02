@@ -23,7 +23,8 @@ pub async fn add_url(client: web::Data<Client>, url: web::Json<models::Url>) -> 
 
     let url = url::Url::parse(url)
         .map_err(|_| {
-            HttpResponse::BadRequest().finish()
+            HttpResponse::BadRequest()
+                .json(models::ErrorMessage::new("Invalid URL format"))
         })?.to_string();
 
     let collection = client
