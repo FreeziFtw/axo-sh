@@ -1,6 +1,6 @@
 # axo-sh [![Website](https://img.shields.io/badge/Website-Axo.sh-blue)](https://axo.sh) [![GitHub license](https://img.shields.io/github/license/FreeziFtw/axo-sh)](./LICENSE.md)
 
-## Api
+## API
 
 ### Add URL https://axo.sh/api/url/ `POST`
 
