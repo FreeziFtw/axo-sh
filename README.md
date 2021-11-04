@@ -15,3 +15,10 @@ Response example
 ```json
 { "id": "5JA8MH" }
 ```
+
+### GET URL https://axo.sh/api/url/{id} `GET`
+
+Response example
+```json
+{ "url": "https://example.com/" }
+```
