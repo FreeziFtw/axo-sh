@@ -8,7 +8,7 @@ use mongodb::bson;
 use rand::distributions;
 use rand::Rng;
 
-use crate::{models, COLUMN_NAME, DB_NAME};
+use crate::{models, actions, COLUMN_NAME, DB_NAME};
 
 #[actix_web::post("/")]
 pub async fn add_url(client: web::Data<Client>, url: web::Json<models::Url>) -> Result<HttpResponse, Error> {
@@ -60,14 +60,19 @@ pub async fn add_url(client: web::Data<Client>, url: web::Json<models::Url>) -> 
 
 #[actix_web::get("/{id}/")]
 pub async fn get_url_by_id(client: web::Data<Client>, id: web::Path<String>) -> Result<HttpResponse, Error> {
-    let collection = client
-        .database(DB_NAME)
-        .collection::<models::ShortUrl>(COLUMN_NAME);
+    let url = actions::get_url_by_id(client, id).await?;
 
-    let url = collection.find_one(bson::doc!("id": id.0), None).await
-        .map_err(|_| {
-            HttpResponse::InternalServerError().finish()
-        })?;
+    Ok(
+        match url {
+            None => HttpResponse::NotFound().finish(),
+            Some(url) => HttpResponse::Ok().json(models::Url { url: url.url }),
+        }
+    )
+}
+
+#[actix_web::get("/{id}/")]
+pub async fn get_url_redirect_by_id(client: web::Data<Client>, id: web::Path<String>) -> Result<HttpResponse, Error> {
+    let url = actions::get_url_by_id(client, id).await?;
 
     Ok(
         match url {

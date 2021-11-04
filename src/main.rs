@@ -65,7 +65,7 @@ async fn main() -> io::Result<()> {
                             .service(handlers::add_url)
                     )
             )
-            .service(handlers::get_url_by_id)
+            .service(handlers::get_url_redirect_by_id)
             .service(
                 Files::new("/", "./static/root")
                     .index_file("index.html")
