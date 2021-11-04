@@ -3,7 +3,7 @@ const submitButton = document.getElementById("submitButton");
 const copyButton = document.getElementById("copyButton");
 const alertDiv = document.getElementById("alertDiv")
 
-submitButton.addEventListener("click", async () => {
+submitButton.addEventListener("click", async() => {
     if (urlInput.readOnly) {
         urlInput.value = "";
         urlInput.readOnly = false;
